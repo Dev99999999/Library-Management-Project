@@ -1,0 +1,72 @@
+[
+  {
+    "title": "JavaScript Basics",
+    "author": "John Doe",
+    "category": "Programming",
+    "availableCopies": 3,
+    "fileUrl": "https://example.com/js-basics.pdf"
+  },
+  {
+    "title": "Learn React",
+    "author": "Priya Sharma",
+    "category": "Web Development",
+    "availableCopies": 5,
+    "fileUrl": "https://example.com/learn-react.pdf"
+  },
+  {
+    "title": "Python for Beginners",
+    "author": "Amit Patel",
+    "category": "Programming",
+    "availableCopies": 2,
+    "fileUrl": "https://example.com/python-beginners.pdf"
+  },
+  {
+    "title": "Data Science Essentials",
+    "author": "Sneha Joshi",
+    "category": "Data Science",
+    "availableCopies": 4,
+    "fileUrl": "https://example.com/data-science-essentials.pdf"
+  },
+  {
+    "title": "Advanced CSS",
+    "author": "Rohit Desai",
+    "category": "Web Design",
+    "availableCopies": 1,
+    "fileUrl": "https://example.com/advanced-css.pdf"
+  },
+  {
+    "title": "Node.js in Action",
+    "author": "Karan Mehta",
+    "category": "Backend Development",
+    "availableCopies": 3,
+    "fileUrl": "https://example.com/nodejs-in-action.pdf"
+  },
+  {
+    "title": "Machine Learning Basics",
+    "author": "Anjali Singh",
+    "category": "AI & ML",
+    "availableCopies": 2,
+    "fileUrl": "https://example.com/ml-basics.pdf"
+  },
+  {
+    "title": "HTML & CSS Guide",
+    "author": "Neha Kapoor",
+    "category": "Web Design",
+    "availableCopies": 4,
+    "fileUrl": "https://example.com/html-css-guide.pdf"
+  },
+  {
+    "title": "MongoDB Essentials",
+    "author": "Vikas Yadav",
+    "category": "Database",
+    "availableCopies": 2,
+    "fileUrl": "https://example.com/mongodb-essentials.pdf"
+  },
+  {
+    "title": "React Native for Mobile",
+    "author": "Pooja Nair",
+    "category": "Mobile Development",
+    "availableCopies": 3,
+    "fileUrl": "https://example.com/react-native-mobile.pdf"
+  }
+]

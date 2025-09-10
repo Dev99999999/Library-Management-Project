@@ -1,0 +1,72 @@
+[
+  {
+    "name": "Dev Sonawane",
+    "email": "dev1@example.com",
+    "password": "123456",
+    "role": "user",
+    "membershipType": "basic"
+  },
+  {
+    "name": "Rohit Sharma",
+    "email": "rohit2@example.com",
+    "password": "abcdef",
+    "role": "user",
+    "membershipType": "premium"
+  },
+  {
+    "name": "Priya Singh",
+    "email": "priya3@example.com",
+    "password": "password123",
+    "role": "user",
+    "membershipType": "basic"
+  },
+  {
+    "name": "Ankit Kumar",
+    "email": "ankit4@example.com",
+    "password": "qwerty",
+    "role": "user",
+    "membershipType": "basic"
+  },
+  {
+    "name": "Sneha Reddy",
+    "email": "sneha5@example.com",
+    "password": "abc123",
+    "role": "user",
+    "membershipType": "premium"
+  },
+  {
+    "name": "Amit Verma",
+    "email": "amit6@example.com",
+    "password": "pass456",
+    "role": "user",
+    "membershipType": "basic"
+  },
+  {
+    "name": "Neha Sharma",
+    "email": "neha7@example.com",
+    "password": "mysecret",
+    "role": "user",
+    "membershipType": "premium"
+  },
+  {
+    "name": "Vikram Singh",
+    "email": "vikram8@example.com",
+    "password": "vikram123",
+    "role": "user",
+    "membershipType": "basic"
+  },
+  {
+    "name": "Riya Kapoor",
+    "email": "riya9@example.com",
+    "password": "riya987",
+    "role": "user",
+    "membershipType": "premium"
+  },
+  {
+    "name": "Karan Mehta",
+    "email": "karan10@example.com",
+    "password": "karan321",
+    "role": "admin",
+    "membershipType": "premium"
+  }
+]
