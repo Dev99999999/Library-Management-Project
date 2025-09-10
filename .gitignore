@@ -1,2 +1,4 @@
 node_modules
 .env
+bookData.json
+userData.json
