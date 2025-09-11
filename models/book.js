@@ -10,7 +10,7 @@ const BookSchema = mongoose.Schema({
         type: Number,
         default: 1
     },
-    fileUrl: String,
+    fileUrl: String
 });
 
 BookSchema.pre('save', async function(next) {
