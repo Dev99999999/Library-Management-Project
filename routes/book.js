@@ -1,6 +1,6 @@
 const express = require("express")
 const router = express.Router()
-const { createBook, getAllBooks, createMultipleBooks, deleteBook } = require("../controllers/book.js")
+const { createBook, getAllBooks, createMultipleBooks, deleteBook, searchBook } = require("../controllers/book.js")
 const upload = require("../middleware/upload.js")
 const { authMiddleware, authorizeRoles } = require("../middleware/auth.js")
 
@@ -30,6 +30,7 @@ router.post("/book", authMiddleware, authorizeRoles("admin"), upload.single('boo
 
 
 router.get("/allbook", getAllBooks)
+router.get("/book/search",authMiddleware,searchBook)
 router.delete("/book/:id", authMiddleware, authorizeRoles("admin"), deleteBook);
 
 module.exports = router

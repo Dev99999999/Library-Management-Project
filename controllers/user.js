@@ -3,13 +3,14 @@ const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const Blacklist = require("../models/blackList.js")
 
 
 const registerUser = async (req, res) => {
     try {
         const { name, email, password, role, membershipType } = req.body;
 
-        if (!name && !email && !password) {
+        if (!name || !email || !password) {
             return res.status(400).json({
                 success: false,
                 message: "Name, email, and password are required"
@@ -24,13 +25,13 @@ const registerUser = async (req, res) => {
             });
         }
 
-        const salt = await bcrypt.genSalt(10);
-        const hashPass = await bcrypt.hash(password, salt);
+        // const salt = await bcrypt.genSalt(10);
+        // const hashPass = await bcrypt.hash(password, salt);
 
         const newUser = new UserModel({
             name,
             email,
-            password: hashPass,
+            password,
             role: role || "user",
             membershipType: membershipType || "basic"
         });
@@ -91,7 +92,7 @@ const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        if (!email && !password) {
+        if (!email || !password) {
             return res.status(400).json({
                 success: false,
                 message: "Email and password are required"
@@ -171,7 +172,6 @@ const resetPassword = async (req, res) => {
   }
 };
 
-
 //update password
 const updatePass = async (req, res) => {
     try {
@@ -194,6 +194,20 @@ const updatePass = async (req, res) => {
     }
 };
 
+const logout = async (req,res) => {
+    try {
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.decode(token);
+
+    const expireTime = new Date(decoded.exp * 1000);
+    await Blacklist.create({ token, expiredAt: expireTime });
+
+    res.json({ success: true, message: "User logged out successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+}
+
 
 module.exports = {
     registerUser,
@@ -201,5 +215,6 @@ module.exports = {
     loginUser,
     forgotPassword,
     resetPassword,
-    updatePass
+    updatePass,
+    logout
 }

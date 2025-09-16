@@ -1,6 +1,6 @@
 const express = require("express")
 const router = express.Router()
-const { registerUser, getUSer, updatePass, loginUser, forgotPassword, resetPassword } = require("../controllers/user.js")
+const { registerUser, getUSer, updatePass, loginUser, forgotPassword, resetPassword, logout } = require("../controllers/user.js")
 const { authMiddleware, authorizeRoles } = require("../middleware/auth.js");
 
 
@@ -12,6 +12,8 @@ router.post("/forgot-password", forgotPassword);
 router.put("/reset-password/:token", resetPassword);
 
 router.put("/change-password", authMiddleware, updatePass);
+
+router.delete("/user/logout",authMiddleware,logout)
 
 // router.delete("/delete/:id", authMiddleware, authorizeRoles("admin"), async (req, res) => {
 //     try {
