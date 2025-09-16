@@ -2,7 +2,7 @@ const UserModel = require("../models/user.js")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
+// const nodemailer = require("nodemailer");
 const Blacklist = require("../models/blackList.js")
 
 
