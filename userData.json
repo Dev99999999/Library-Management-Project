@@ -37,7 +37,7 @@
   {
     "name": "Amit Verma",
     "email": "amit6@example.com",
-    "password": "pass456",
+    "password": "12345",
     "role": "user",
     "membershipType": "basic"
   },

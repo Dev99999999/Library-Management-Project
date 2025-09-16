@@ -1,5 +1,7 @@
 const mongoose = require("mongoose")
 const Counter = require("./counter.js");
+const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 
 const UserScehma = mongoose.Schema({
     _id: { type: Number },
@@ -18,17 +20,37 @@ const UserScehma = mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['user','admin'],
+        enum: ['user', 'admin'],
         default: 'user'
     },
     membershipType: {
         type: String,
-        enum :["premium", "basic"],
+        enum: ["premium", "basic"],
         default: "basic"
-    }
-},{ timestamps: true })
+    },
 
-UserScehma.pre('save', async function(next) {
+    resetPasswordToken: String,
+    resetPasswordExpire: Date
+
+}, { timestamps: true })
+
+// UserScehma.pre("save", async function (next) {
+//   if (!this.isModified("password")) return next();
+//   this.password = await bcrypt.hash(this.password, 10);
+//   next();
+// });
+
+// Generate password reset token
+UserScehma.methods.getResetPasswordToken = () => {
+  const resetToken = crypto.randomBytes(20).toString("hex");
+  this.resetPasswordToken = crypto.createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  this.resetPasswordExpire = Date.now() + 5 * 60 * 1000; // 5 min
+  return resetToken;
+};
+
+UserScehma.pre('save', async function (next) {
     if (this.isNew) {
         const counter = await Counter.findOneAndUpdate(
             { id_name: 'user_id' },

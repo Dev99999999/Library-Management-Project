@@ -1,6 +1,9 @@
 const UserModel = require("../models/user.js")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+
 
 const registerUser = async (req, res) => {
     try {
@@ -120,6 +123,56 @@ const loginUser = async (req, res) => {
     }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const resetToken = user.getResetPasswordToken();
+    await user.save({ validateBeforeSave: false });
+
+    const resetUrl = `http://localhost:3000/api/reset-password/${resetToken}`;
+
+    // ✅ Console me print karenge instead of email
+    console.log(`Reset Password Link: ${resetUrl}`);
+
+    res.json({ success: true, message: "Reset link generated. Check console for URL" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
+const resetPassword = async (req, res) => {
+  try {
+    const resetPasswordToken = crypto.createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
+
+    const user = await UserModel.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: "Invalid or expired token" });
+    }
+
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+    res.json({ success: true, message: "Password updated successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
 //update password
 const updatePass = async (req, res) => {
     try {
@@ -147,5 +200,7 @@ module.exports = {
     registerUser,
     getUSer,
     loginUser,
+    forgotPassword,
+    resetPassword,
     updatePass
 }
