@@ -136,7 +136,6 @@ const forgotPassword = async (req, res) => {
 
     const resetUrl = `http://localhost:3000/api/reset-password/${resetToken}`;
 
-    // ✅ Console me print karenge instead of email
     console.log(`Reset Password Link: ${resetUrl}`);
 
     res.json({ success: true, message: "Reset link generated. Check console for URL" });

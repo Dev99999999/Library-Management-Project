@@ -34,19 +34,22 @@ const UserScehma = mongoose.Schema({
 
 }, { timestamps: true })
 
-// UserScehma.pre("save", async function (next) {
-//   if (!this.isModified("password")) return next();
-//   this.password = await bcrypt.hash(this.password, 10);
-//   next();
-// });
+UserScehma.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
 
 // Generate password reset token
-UserScehma.methods.getResetPasswordToken = () => {
+UserScehma.methods.getResetPasswordToken = function () {
   const resetToken = crypto.randomBytes(20).toString("hex");
   this.resetPasswordToken = crypto.createHash("sha256")
     .update(resetToken)
     .digest("hex");
-  this.resetPasswordExpire = Date.now() + 5 * 60 * 1000; // 5 min
+  this.resetPasswordExpire = Date.now() + 2 * 60 * 1000; // 2 min
+//   console.log(this.resetPasswordExpire)
+//   console.log(this.resetPasswordToken)
+//   console.log(resetToken)
   return resetToken;
 };
 
