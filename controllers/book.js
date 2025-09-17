@@ -1,31 +1,33 @@
 const bookModel = require("../models/book.js");
 const Counter = require("../models/counter.js");
+const cloudinary = require("cloudinary").v2;
+
 
 // file upload middleware will put file info in req.file
 const createBook = async (req, res) => {
-    try {
-        const { title, author, category, availableCopies } = req.body;
-        if (!req.file) return res.status(400).json({ success: false, message: "File is required" });
+  try {
+    const { title, author, category, availableCopies } = req.body;
+    if (!req.file) return res.status(400).json({ success: false, message: "File is required" });
 
-        const Book = await bookModel.create({
-            title,
-            author,
-            category,
-            availableCopies,
-            fileUrl: req.file.path // Cloudinary URL
-        });
+    const Book = await bookModel.create({
+      title,
+      author,
+      category,
+      availableCopies,
+      fileUrl: req.file.path // Cloudinary URL
+    });
 
-        res.status(200).json({
-            success: true,
-            data: Book
-        });
-    } catch (error) {
-        console.log(error)
-        res.status(400).json({
-            success: false,
-            message: "Some Error Issue here.."
-        });
-    }
+    res.status(200).json({
+      success: true,
+      data: Book
+    });
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({
+      success: false,
+      message: "Some Error Issue here.."
+    });
+  }
 }
 
 const createMultipleBooks = async (req, res) => {
@@ -84,8 +86,8 @@ const getAllBooks = async (req, res) => {
   }
 };
 
-const searchBook = async(req,res) =>{
-   try {
+const searchBook = async (req, res) => {
+  try {
     const { title } = req.query;
     if (!title) return res.status(400).json({ success: false, message: "Book name is required" });
 
@@ -102,10 +104,21 @@ const searchBook = async(req,res) =>{
 const deleteBook = async (req, res) => {
   try {
     const book = await bookModel.findById(req.params.id);
+    // console.log(book)
     if (!book) return res.status(404).json({ success: false, message: "Book not found" });
 
+    const extractPublicId = (url) => {
+      const parts = url.split("/");
+      const filename = parts.pop();
+      const folder = parts.slice(-1)[0];
+      const publicId = folder + "/" + filename.split(".")[0];
+      return publicId;
+    };
+
+    console.log(book.fileUrl)
+    console.log(extractPublicId(book.fileUrl))
     if (book.fileUrl) {
-      if (book.fileUrl.startsWith("http") || book.fileUrl.startsWith("https")) {
+      if (book.fileUrl.startsWith("http")) {
         const publicId = extractPublicId(book.fileUrl);
         await cloudinary.uploader.destroy(publicId);
       } else {
@@ -124,9 +137,9 @@ const deleteBook = async (req, res) => {
 
 
 module.exports = {
-    createMultipleBooks,
-    createBook,
-    getAllBooks,
-    searchBook,
-    deleteBook
+  createMultipleBooks,
+  createBook,
+  getAllBooks,
+  searchBook,
+  deleteBook
 }
