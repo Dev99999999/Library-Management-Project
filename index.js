@@ -6,15 +6,15 @@ const connectDatabase = require("./db.js")
 const User = require("./routes/user.js")
 const Book = require("./routes/book.js")
 const borrowedBook = require("./routes/borrowedBook.js")
-const path = require("path")
-const expressLayouts = require("express-ejs-layouts");
+// const path = require("path")
+// const expressLayouts = require("express-ejs-layouts");
 
 connectDatabase()
 
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 
-// // Set EJS as view engine
+// Set EJS as view engine
 // app.set("view engine", "ejs");
 // app.set("views", path.join(__dirname, "views"));
 

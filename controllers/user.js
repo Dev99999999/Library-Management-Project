@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const Blacklist = require("../models/blackList.js")
 
 
+
 const registerUser = async (req, res) => {
     try {
         const { name, email, password, role, membershipType } = req.body;
@@ -42,6 +43,7 @@ const registerUser = async (req, res) => {
             success: true,
             data: newUser
         });
+
 
     } catch (error) {
         console.log(error);
@@ -105,71 +107,75 @@ const loginUser = async (req, res) => {
         const checkPass = await bcrypt.compare(password, user.password);
         if (!checkPass) return res.status(400).json({ success: false, message: "Incorrect password" });
 
-        const token = jwt.sign({ 
-            id: user._id, 
-            email: user.email, 
-            role: user.role 
-        }, 
-            process.env.JWT_SECRET_KEY, 
-            { expiresIn: "1h" });
+        const token = jwt.sign({
+            id: user._id,
+            email: user.email,
+            role: user.role
+        },
+            process.env.JWT_SECRET_KEY,
+            { expiresIn: "180d" });
 
+        user.tokens = user.tokens || []
+        user.tokens.push(token)
+
+        await user.save()
         res.status(200).json({ success: true, token });
 
     } catch (err) {
         console.log(err);
-        res.status(500).json({ 
-            success: false, 
-            message: "Something went wrong" 
+        res.status(500).json({
+            success: false,
+            message: "Something went wrong"
         });
     }
 };
 
 const forgotPassword = async (req, res) => {
-  try {
-    const { email } = req.body;
-    const user = await UserModel.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+    try {
+        const { email } = req.body;
+        const user = await UserModel.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        const resetToken = user.getResetPasswordToken();
+        await user.save({ validateBeforeSave: false });
+
+        const resetUrl = `http://localhost:3000/api/reset-password/${resetToken}`;
+
+        console.log(`Reset Password Link: ${resetUrl}`);
+
+        res.json({ success: true, message: "Reset link generated. Check console for URL" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
     }
-
-    const resetToken = user.getResetPasswordToken();
-    await user.save({ validateBeforeSave: false });
-
-    const resetUrl = `http://localhost:3000/api/reset-password/${resetToken}`;
-
-    console.log(`Reset Password Link: ${resetUrl}`);
-
-    res.json({ success: true, message: "Reset link generated. Check console for URL" });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
 };
 
 
 const resetPassword = async (req, res) => {
-  try {
-    const resetPasswordToken = crypto.createHash("sha256")
-      .update(req.params.token)
-      .digest("hex");
+    try {
+        const resetPasswordToken = crypto.createHash("sha256")
+            .update(req.params.token)
+            .digest("hex");
 
-    const user = await UserModel.findOne({
-      resetPasswordToken,
-      resetPasswordExpire: { $gt: Date.now() }
-    });
+        const user = await UserModel.findOne({
+            resetPasswordToken,
+            resetPasswordExpire: { $gt: Date.now() }
+        });
 
-    if (!user) {
-      return res.status(400).json({ success: false, message: "Invalid or expired token" });
+        if (!user) {
+            return res.status(400).json({ success: false, message: "Invalid or expired token" });
+        }
+
+        user.password = req.body.password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+
+        await user.save();
+        res.json({ success: true, message: "Password updated successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
     }
-
-    user.password = req.body.password;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-
-    await user.save();
-    res.json({ success: true, message: "Password updated successfully" });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
 };
 
 //update password
@@ -194,18 +200,18 @@ const updatePass = async (req, res) => {
     }
 };
 
-const logout = async (req,res) => {
+const logout = async (req, res) => {
     try {
-    const token = req.headers.authorization.split(" ")[1];
-    const decoded = jwt.decode(token);
+        const token = req.headers.authorization.split(" ")[1];
+        const decoded = jwt.decode(token);
 
-    const expireTime = new Date(decoded.exp * 1000);
-    await Blacklist.create({ token, expiredAt: expireTime });
+        const expireTime = new Date(decoded.exp * 1000);
+        await Blacklist.create({ token, expiredAt: expireTime });
 
-    res.json({ success: true, message: "User logged out successfully" });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
+        res.json({ success: true, message: "User logged out successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
 }
 
 

@@ -2,7 +2,6 @@ const bookModel = require("../models/book.js");
 const Counter = require("../models/counter.js");
 const cloudinary = require("cloudinary").v2;
 
-
 // file upload middleware will put file info in req.file
 const createBook = async (req, res) => {
   try {

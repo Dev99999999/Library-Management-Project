@@ -2,6 +2,7 @@ const mongoose = require("mongoose")
 const Counter = require("./counter.js");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const { type } = require("os");
 
 const UserScehma = mongoose.Schema({
     _id: { type: Number },
@@ -28,6 +29,18 @@ const UserScehma = mongoose.Schema({
         enum: ["premium", "basic"],
         default: "basic"
     },
+    
+    tokens: [
+        {
+            token: {
+                type: String,
+                required: true
+            }
+        }
+    ],
+    // token: {
+    //     type: String
+    // },
 
     resetPasswordToken: String,
     resetPasswordExpire: Date
@@ -47,9 +60,6 @@ UserScehma.methods.getResetPasswordToken = function () {
     .update(resetToken)
     .digest("hex");
   this.resetPasswordExpire = Date.now() + 2 * 60 * 1000; // 2 min
-//   console.log(this.resetPasswordExpire)
-//   console.log(this.resetPasswordToken)
-//   console.log(resetToken)
   return resetToken;
 };
 
