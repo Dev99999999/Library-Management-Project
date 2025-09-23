@@ -29,7 +29,7 @@ router.post("/book", authMiddleware, authorizeRoles("admin"), upload.single('boo
 );
 
 
-router.get("/allbook", getAllBooks)
+router.get("/allbook",authMiddleware, getAllBooks)
 router.get("/book/search",authMiddleware,searchBook)
 router.delete("/book/:id", authMiddleware, authorizeRoles("admin"), deleteBook);
 

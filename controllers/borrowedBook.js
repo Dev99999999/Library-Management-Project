@@ -7,7 +7,6 @@ const borrowed = async (req, res) => {
         const Borrow = await borrowedBookModel.create(req.body)
         // await user.save()
 
-
         res.status(200).json({
             success: true,
             data: Borrow
@@ -35,6 +34,7 @@ const alldata = async (req, res) => {
             //         }
             //     }
             // },
+            
             {
                 $lookup: {
                     from: "users",
@@ -44,6 +44,7 @@ const alldata = async (req, res) => {
                 }
             },
             { $unwind: "$userDetails" },
+            
             {
                 $lookup: {
                     from: "books",
@@ -62,17 +63,19 @@ const alldata = async (req, res) => {
                     returnDate: 1,
                     // borrowDate: moment(borrowedBookModel.borrowDate).format("YYYY-MM-DD hh:mm A"),
                     // returnDate: borrowedBookModel.returnDate ? moment(borrowedBookModel.returnDate).format("YYYY-MM-DD hh:mm A") : null,
-                    fine: 1
+                    fine: 1,
                 }
             }
         ]);
+
+        // console.log(result)
 
         const formattedResult = result.map(item => ({
             name: item.name,
             book: item.book,
             borrowDate: moment(item.borrowDate).format("YYYY-MM-DD hh:mm A"),
             returnDate: item.returnDate ? moment(item.returnDate).format("YYYY-MM-DD hh:mm A") : null,
-            fine: item.fine
+            fine: item.fine,
         }));
 
 
@@ -133,6 +136,7 @@ const getBorrowedBook = async (req, res) => {
                 }
             }
         ]);
+
 
         res.status(200).json({
             success: true,

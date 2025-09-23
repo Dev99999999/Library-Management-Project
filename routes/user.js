@@ -2,6 +2,7 @@ const express = require("express")
 const router = express.Router()
 const { registerUser, getUSer, updatePass, loginUser, forgotPassword, resetPassword, logout } = require("../controllers/user.js")
 const { authMiddleware, authorizeRoles } = require("../middleware/auth.js");
+const activityTracker = require("../models/activityTracker.js")
 
 
 router.post("/register", registerUser)
@@ -14,6 +15,14 @@ router.put("/reset-password/:token", resetPassword);
 router.put("/change-password", authMiddleware, updatePass);
 
 router.delete("/user/logout",authMiddleware,logout)
+
+router.get("/activities", authMiddleware, authorizeRoles("admin"), async(req, res) => {
+    const activities = await activityTracker.find()
+    // console.log(activities)
+    // console.log(activities)
+    res.json(activities)
+})
+
 
 // router.delete("/delete/:id", authMiddleware, authorizeRoles("admin"), async (req, res) => {
 //     try {

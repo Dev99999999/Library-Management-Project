@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken")
 const crypto = require("crypto");
 // const nodemailer = require("nodemailer");
 const Blacklist = require("../models/blackList.js")
-
+const activityTracker = require("../models/activityTracker.js")
 
 
 const registerUser = async (req, res) => {
@@ -39,6 +39,12 @@ const registerUser = async (req, res) => {
 
         await newUser.save();
 
+        activityTracker.create({
+            user_id: newUser._id,
+            actionType: `user register Successfully`,
+            details: { userName: newUser.name, email: newUser.email }
+        })
+
         res.status(201).json({
             success: true,
             data: newUser
@@ -70,6 +76,13 @@ const getUSer = async (req, res) => {
 
         const total = await UserModel.countDocuments();
 
+        exports.activityTracker.create({
+            // user_id,
+            actionType: `Admin see all users..`,
+            // details: { userName: req.user.name }
+        })
+
+
         res.status(200).json({
             success: true,
             total,
@@ -78,6 +91,8 @@ const getUSer = async (req, res) => {
             totalPages: Math.ceil(total / limitNumber),
             allUser
         });
+
+        
 
     } catch (error) {
         console.log(error)
@@ -118,8 +133,20 @@ const loginUser = async (req, res) => {
         user.tokens = user.tokens || []
         user.tokens.push(token)
 
+        activityTracker.create({
+            user_id: user._id,
+            actionType: `user login Successfully`,
+            details: { userName: user.name, email: user.email }
+        })
+
         await user.save()
         res.status(200).json({ success: true, token });
+
+        // activityTracker.create({
+        //     user_id:req.body._id,
+        //     actionType: `user  Successfully`,
+        //     details: { userName: req.body.name }
+        // })
 
     } catch (err) {
         console.log(err);
@@ -145,7 +172,16 @@ const forgotPassword = async (req, res) => {
 
         console.log(`Reset Password Link: ${resetUrl}`);
 
-        res.json({ success: true, message: "Reset link generated. Check console for URL" });
+        activityTracker.create({
+            user_id: user._id,
+            actionType: `user  Successfully`,
+            details: { email: user.email, userName: user.name }
+        })
+
+        res.json({ 
+            success: true, 
+            message: "Reset link generated. Check console for URL" 
+        });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -172,7 +208,17 @@ const resetPassword = async (req, res) => {
         user.resetPasswordExpire = undefined;
 
         await user.save();
-        res.json({ success: true, message: "Password updated successfully" });
+
+        activityTracker.create({
+            user_id: user._id,
+            actionType: `user reset their password successFully`,
+            details: { email: user.email, userName: user.name }
+        })
+
+        res.json({ 
+            success: true, 
+            message: "Password updated successfully" 
+        });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -194,7 +240,15 @@ const updatePass = async (req, res) => {
         user.password = await bcrypt.hash(newPassword, salt);
         await user.save();
 
-        res.json({ message: "Password changed successfully" });
+        activityTracker.create({
+            user_id: user._id,
+            actionType: `user updated thier password  Successfully`,
+            details: { email: user.email, userName: user.name }
+        })
+
+        res.json({ 
+            message: "Password changed successfully" 
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

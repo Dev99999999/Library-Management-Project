@@ -2,7 +2,6 @@ const mongoose = require("mongoose")
 const Counter = require("./counter.js");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-const { type } = require("os");
 
 const UserScehma = mongoose.Schema({
     _id: { type: Number },
@@ -29,15 +28,17 @@ const UserScehma = mongoose.Schema({
         enum: ["premium", "basic"],
         default: "basic"
     },
+
+    tokens: [ String ],
     
-    tokens: [
-        {
-            token: {
-                type: String,
-                required: true
-            }
-        }
-    ],
+    // tokens: [
+    //     {
+    //         token: {
+    //             type: String,
+    //             required: true
+    //         }
+    //     }
+    // ],
     // token: {
     //     type: String
     // },

@@ -1,6 +1,9 @@
+const book = require("../models/book.js");
 const bookModel = require("../models/book.js");
 const Counter = require("../models/counter.js");
 const cloudinary = require("cloudinary").v2;
+const adminActivityTracker = require("../models/admin-activityTracker.js")
+// const activityTracker = require("../models/activityTracker.js")
 
 // file upload middleware will put file info in req.file
 const createBook = async (req, res) => {
@@ -15,6 +18,12 @@ const createBook = async (req, res) => {
       availableCopies,
       fileUrl: req.file.path // Cloudinary URL
     });
+
+    adminActivityTracker.create({
+      book_id: Book._id,
+      actionType: `New Book added`,
+      details: { book: Book }
+    })
 
     res.status(200).json({
       success: true,
@@ -49,6 +58,12 @@ const createMultipleBooks = async (req, res) => {
     }));
 
     const result = await bookModel.insertMany(books);
+
+    adminActivityTracker.create({
+      // book_id: result,
+      actionType: `New Books added`,
+      details: { books: result }
+    })
 
     res.status(200).json({ success: true, data: result });
   } catch (err) {
@@ -94,6 +109,13 @@ const searchBook = async (req, res) => {
     if (!book) return res.status(404).json({ success: false, message: "Book not found" });
 
     res.json({ success: true, book });
+
+    // activityTracker.create({
+    //   user_id: req.user_id,
+    //   actionType: `user  Successfully`,
+    //   details: { userName: req.user.name }
+    // })
+
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -126,6 +148,12 @@ const deleteBook = async (req, res) => {
     }
 
     await bookModel.findByIdAndDelete(req.params.id);
+
+    adminActivityTracker.create({
+      // book_id: result,
+      actionType: `Book removed..`,
+      details: { book: book }
+    })
 
     res.status(200).json({ success: true, message: "Book and its data deleted successfully" });
   } catch (err) {
