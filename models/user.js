@@ -64,6 +64,7 @@ UserScehma.methods.getResetPasswordToken = function () {
   return resetToken;
 };
 
+//use counter for id in seq - 1,2,3
 UserScehma.pre('save', async function (next) {
     if (this.isNew) {
         const counter = await Counter.findOneAndUpdate(
