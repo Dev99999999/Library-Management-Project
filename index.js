@@ -6,6 +6,7 @@ const connectDatabase = require("./db.js")
 const User = require("./routes/user.js")
 const Book = require("./routes/book.js")
 const borrowedBook = require("./routes/borrowedBook.js")
+const mostUserorBook = require("./routes/most-user-book.js")
 // const path = require("path")
 // const expressLayouts = require("express-ejs-layouts");
 
@@ -25,6 +26,7 @@ app.use(express.urlencoded({extended: true}))
 app.use("/api",User)
 app.use("/api",Book)
 app.use("/api",borrowedBook)
+app.use("/api",mostUserorBook)
 
 // app.get("/", (req, res) => {
 //   res.render("index", { title: "Library Management" });

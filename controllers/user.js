@@ -76,11 +76,11 @@ const getUSer = async (req, res) => {
 
         const total = await UserModel.countDocuments();
 
-        exports.activityTracker.create({
-            // user_id,
-            actionType: `Admin see all users..`,
-            // details: { userName: req.user.name }
-        })
+        // exports.activityTracker.create({
+        //     // user_id,
+        //     actionType: `Admin see all users..`,
+        //     // details: { userName: req.user.name }
+        // })
 
 
         res.status(200).json({
