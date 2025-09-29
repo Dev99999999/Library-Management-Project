@@ -5,6 +5,7 @@ const crypto = require("crypto");
 // const nodemailer = require("nodemailer");
 const Blacklist = require("../models/blackList.js")
 const activityTracker = require("../models/activityTracker.js")
+const UAParser = require("ua-parser-js")
 
 
 const registerUser = async (req, res) => {
@@ -92,7 +93,7 @@ const getUSer = async (req, res) => {
             allUser
         });
 
-        
+
 
     } catch (error) {
         console.log(error)
@@ -122,6 +123,21 @@ const loginUser = async (req, res) => {
         const checkPass = await bcrypt.compare(password, user.password);
         if (!checkPass) return res.status(400).json({ success: false, message: "Incorrect password" });
 
+        // Parse device info
+        const parser = new UAParser(req.headers["user-agent"]);
+        const deviceInfo = parser.getDevice();
+
+        console.log(deviceInfo)
+
+        // let deviceName = "Unknown Device";
+        // if (deviceInfo.vendor && deviceInfo.model) {
+        //     deviceName = `${deviceInfo.vendor} ${deviceInfo.model}`;
+        // } else if (deviceInfo.model) {
+        //     deviceName = deviceInfo.model; 
+        // } else if (deviceInfo.vendor) {
+        //     deviceName = deviceInfo.vendor;
+        // }
+
         const token = jwt.sign({
             id: user._id,
             email: user.email,
@@ -130,8 +146,11 @@ const loginUser = async (req, res) => {
             process.env.JWT_SECRET_KEY,
             { expiresIn: "180d" });
 
-        user.tokens = user.tokens || []
-        user.tokens.push(token)
+        // agar tokens array nahi h to empty bana do
+        if (!user.tokens) user.tokens = [];
+
+        // hamesha safe device string push karo
+        user.tokens.push({ token, device: deviceInfo});
 
         activityTracker.create({
             user_id: user._id,
@@ -140,7 +159,7 @@ const loginUser = async (req, res) => {
         })
 
         await user.save()
-        res.status(200).json({ success: true, token });
+        res.status(200).json({ success: true, token, deviceInfo });
 
         // activityTracker.create({
         //     user_id:req.body._id,
@@ -178,9 +197,9 @@ const forgotPassword = async (req, res) => {
             details: { email: user.email, userName: user.name }
         })
 
-        res.json({ 
-            success: true, 
-            message: "Reset link generated. Check console for URL" 
+        res.json({
+            success: true,
+            message: "Reset link generated. Check console for URL"
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -215,9 +234,9 @@ const resetPassword = async (req, res) => {
             details: { email: user.email, userName: user.name }
         })
 
-        res.json({ 
-            success: true, 
-            message: "Password updated successfully" 
+        res.json({
+            success: true,
+            message: "Password updated successfully"
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -246,8 +265,8 @@ const updatePass = async (req, res) => {
             details: { email: user.email, userName: user.name }
         })
 
-        res.json({ 
-            message: "Password changed successfully" 
+        res.json({
+            message: "Password changed successfully"
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
