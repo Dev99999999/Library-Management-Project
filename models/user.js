@@ -37,7 +37,7 @@ const UserScehma = mongoose.Schema({
       },
       device: {
         type: String,
-        default: "Unknown Device"   // fallback yaha pe
+        default: "Unknown Device"
       }
     }
   ],

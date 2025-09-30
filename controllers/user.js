@@ -5,7 +5,8 @@ const crypto = require("crypto");
 // const nodemailer = require("nodemailer");
 const Blacklist = require("../models/blackList.js")
 const activityTracker = require("../models/activityTracker.js")
-const UAParser = require("ua-parser-js")
+// const UAParser = require("ua-parser-js");
+const DeviceDetector = require("device-detector-js")
 
 
 const registerUser = async (req, res) => {
@@ -123,20 +124,46 @@ const loginUser = async (req, res) => {
         const checkPass = await bcrypt.compare(password, user.password);
         if (!checkPass) return res.status(400).json({ success: false, message: "Incorrect password" });
 
-        // Parse device info
-        const parser = new UAParser(req.headers["user-agent"]);
-        const deviceInfo = parser.getDevice();
+        // Parse device info:
+        // const parser = new UAParser(req.headers["user-agent"]);
+        // const deviceInfo = parser.getDevice() ;
 
-        console.log(deviceInfo)
+        // console.log(deviceInfo)
 
         // let deviceName = "Unknown Device";
+
         // if (deviceInfo.vendor && deviceInfo.model) {
         //     deviceName = `${deviceInfo.vendor} ${deviceInfo.model}`;
-        // } else if (deviceInfo.model) {
-        //     deviceName = deviceInfo.model; 
-        // } else if (deviceInfo.vendor) {
-        //     deviceName = deviceInfo.vendor;
+        // } else {
+        //     // Fallback: Directly parse from user-agent
+        //     const ua = req.headers["user-agent"];
+
+        //     // Example: "Mozilla/5.0 (Linux; Android 11; Redmi 9)"
+        //     const match = ua.match(/\((.*?)\)/); // andar wali () content nikal lo
+        //     if (match && match[1]) {
+        //         const parts = match[1].split(";");
+        //         if (parts.length > 2) {
+        //             deviceName = parts[2].trim(); // mostly yaha model hota hai
+        //         }
+        //     }
         // }
+
+        const deviceDetector = new DeviceDetector()
+        const device = deviceDetector.parse(req.headers["user-agent"])
+
+        console.log(device)
+
+        let deviceName = "Unknow device"
+
+        if(device.device && device.device.brand && device.device.model){
+            deviceName = `${device.device.brand} ${device.device.model}`
+        }
+        else if(device.device && device.device.model){
+            deviceName = `${device.device.model}`
+        }
+        else if(device.device && device.device.brand){
+            deviceName = `${device.device.brand}`
+        }
 
         const token = jwt.sign({
             id: user._id,
@@ -146,20 +173,19 @@ const loginUser = async (req, res) => {
             process.env.JWT_SECRET_KEY,
             { expiresIn: "180d" });
 
-        // agar tokens array nahi h to empty bana do
+
         if (!user.tokens) user.tokens = [];
 
-        // hamesha safe device string push karo
-        user.tokens.push({ token, device: deviceInfo});
+        user.tokens.push({ token, device: deviceName });
 
         activityTracker.create({
             user_id: user._id,
             actionType: `user login Successfully`,
-            details: { userName: user.name, email: user.email }
+            details: { userName: user.name, email: user.email, device: deviceName }
         })
 
         await user.save()
-        res.status(200).json({ success: true, token, deviceInfo });
+        res.status(200).json({ success: true, token, deviceName });
 
         // activityTracker.create({
         //     user_id:req.body._id,
@@ -276,6 +302,15 @@ const updatePass = async (req, res) => {
 const logout = async (req, res) => {
     try {
         const token = req.headers.authorization.split(" ")[1];
+
+        const user = await UserModel.findOne({ "tokens.token": token})
+        if(!user){
+            return res.status(400).json({
+                success: false,
+                message: "User not exits here.."
+            })
+        }
+
         const decoded = jwt.decode(token);
 
         const expireTime = new Date(decoded.exp * 1000);
