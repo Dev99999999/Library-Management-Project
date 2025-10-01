@@ -6,7 +6,7 @@ const crypto = require("crypto");
 const Blacklist = require("../models/blackList.js")
 const activityTracker = require("../models/activityTracker.js")
 // const UAParser = require("ua-parser-js");
-const DeviceDetector = require("device-detector-js")
+const DeviceDetector = require("device-detector-js");
 
 
 const registerUser = async (req, res) => {
@@ -105,7 +105,6 @@ const getUSer = async (req, res) => {
     }
 }
 
-
 //Login
 const loginUser = async (req, res) => {
     try {
@@ -155,13 +154,16 @@ const loginUser = async (req, res) => {
 
         let deviceName = "Unknow device"
 
-        if(device.device && device.device.brand && device.device.model){
+        if (device.device && device.device.brand && device.device.model) {
             deviceName = `${device.device.brand} ${device.device.model}`
         }
-        else if(device.device && device.device.model){
+        else if (device.device && device.device.model) {
             deviceName = `${device.device.model}`
         }
-        else if(device.device && device.device.brand){
+        // else if(device.client && device.client.name){
+        //     deviceName = `${device.client.name}`
+        // }
+        else if (device.device && device.device.brand) {
             deviceName = `${device.device.brand}`
         }
 
@@ -303,22 +305,51 @@ const logout = async (req, res) => {
     try {
         const token = req.headers.authorization.split(" ")[1];
 
-        const user = await UserModel.findOne({ "tokens.token": token})
-        if(!user){
+        const user = await UserModel.findOne({ "tokens.token": token })
+        if (!user) {
             return res.status(400).json({
                 success: false,
                 message: "User not exits here.."
             })
         }
 
-        const decoded = jwt.decode(token);
+        const tokenEntry = user.tokens.find(t => t.token === token)
+        let deviceName = tokenEntry ? tokenEntry.device : "Unkonw device"
 
-        const expireTime = new Date(decoded.exp * 1000);
-        await Blacklist.create({ token, expiredAt: expireTime });
+        user.tokens = user.tokens.filter(t => t.token !== token);
+        await user.save();
 
-        res.json({ success: true, message: "User logged out successfully" });
+        // user.tokens = user.tokens.findOneAndDelete( token )
+        // await user.save()
+
+
+        console.log(tokenEntry)
+
+        // const decoded = jwt.decode(token);
+
+        // const expireTime = new Date(decoded.exp * 1000);
+
+        // await UserModel.findOneAndDelete({ token })
+        // await user.save()
+
+        // await Blacklist.create({ token, expiredAt: expireTime, device: deviceName });
+
+
+        activityTracker.create({
+            user_id: user._id,
+            actionType: `user logout from ${deviceName}`,
+            details: { email: user.email, userName: user.name }
+        })
+
+        return res.json({
+            success: true,
+            message: `${user.email} logged out successfully from ${deviceName}`
+        });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
     }
 }
 

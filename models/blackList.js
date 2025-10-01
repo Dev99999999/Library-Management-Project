@@ -5,6 +5,10 @@ const BlacklistSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
+  device: {
+    type: String,
+    required: true
+  },
   expiredAt: { 
     type: Date, 
     required: true 
