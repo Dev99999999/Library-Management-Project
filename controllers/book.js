@@ -15,7 +15,7 @@ const createBook = async (req, res) => {
       title,
       author,
       category,
-      availableCopies,
+      availableCopies, 
       fileUrl: req.file.path // Cloudinary URL
     });
 

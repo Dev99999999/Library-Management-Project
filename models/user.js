@@ -70,7 +70,7 @@ UserScehma.methods.getResetPasswordToken = function () {
   this.resetPasswordToken = crypto.createHash("sha256")
     .update(resetToken)
     .digest("hex");
-  this.resetPasswordExpire = Date.now() + 2 * 60 * 1000; // 2 min
+  this.resetPasswordExpire = Date.now() + 2 * 60 * 1000;
   return resetToken;
 };
 
@@ -80,7 +80,7 @@ UserScehma.pre('save', async function (next) {
     const counter = await Counter.findOneAndUpdate(
       { id_name: 'user_id' },
       { $inc: { seq: 1 } },
-      { new: true, upsert: true } // create counter if it doesn't exist
+      { new: true, upsert: true }
     );
     this._id = counter.seq;
   }
