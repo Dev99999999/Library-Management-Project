@@ -234,7 +234,6 @@ const forgotPassword = async (req, res) => {
     }
 };
 
-
 const resetPassword = async (req, res) => {
     try {
         const resetPasswordToken = crypto.createHash("sha256")
@@ -289,12 +288,12 @@ const updatePass = async (req, res) => {
 
         activityTracker.create({
             user_id: user._id,
-            actionType: `user updated thier password  Successfully`,
+            actionType: `user updated thier password Successfully`,
             details: { email: user.email, userName: user.name }
         })
 
         res.json({
-            message: "Password changed successfully"
+            message: `${user.name} Password changed successfully`
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -304,6 +303,13 @@ const updatePass = async (req, res) => {
 const logout = async (req, res) => {
     try {
         const token = req.headers.authorization.split(" ")[1];
+
+        if(!token && !devices){
+            return res.status(400).json({
+                success: false,
+                message: "token is required!!"
+            })
+        }
 
         const user = await UserModel.findOne({ "tokens.token": token })
         if (!user) {
@@ -316,12 +322,20 @@ const logout = async (req, res) => {
         const tokenEntry = user.tokens.find(t => t.token === token)
         let deviceName = tokenEntry ? tokenEntry.device : "Unkonw device"
 
-        user.tokens = user.tokens.filter(t => t.token !== token);
-        await user.save();
+        // user.tokens = user.tokens.filter(t => t.token !== token);
+        // await user.save();
 
         // user.tokens = user.tokens.findOneAndDelete( token )
         // await user.save()
 
+        await UserModel.findOneAndUpdate(
+           { _id: user._id },
+           {
+               $pull: { tokens: { token: token }  }
+           }
+        )
+
+        // await user.save()
 
         console.log(tokenEntry)
 
