@@ -303,62 +303,65 @@ const updatePass = async (req, res) => {
 const logout = async (req, res) => {
     try {
         const token = req.headers.authorization.split(" ")[1];
+        const { devices = [], all = false } = req.body
 
-        if(!token && !devices){
+        if (!token && !devices && !all) {
             return res.status(400).json({
                 success: false,
-                message: "token is required!!"
+                message: "token or devices names or all them one field is nessasary!!"
             })
         }
 
-        const user = await UserModel.findOne({ "tokens.token": token })
-        if (!user) {
-            return res.status(400).json({
-                success: false,
-                message: "User not exits here.."
+        if (token) {
+            const user = await UserModel.findOne({ "tokens.token": token })
+            if (!user) {
+                return res.status(400).json({
+                    success: false,
+                    message: "User not exits here.."
+                })
+            }
+
+            const tokenEntry = user.tokens.find(t => t.token === token)
+            let deviceName = tokenEntry ? tokenEntry.device : "Unkonw device"
+
+            // user.tokens = user.tokens.filter(t => t.token !== token);
+            // await user.save();
+
+            // user.tokens = user.tokens.findOneAndDelete( token )
+            // await user.save()
+
+            await UserModel.findOneAndUpdate(
+                { _id: user._id },
+                {
+                    $pull: { tokens: { token: token } }
+                }
+            )
+
+            // await user.save()
+
+            console.log(tokenEntry)
+
+            // const decoded = jwt.decode(token);
+
+            // const expireTime = new Date(decoded.exp * 1000);
+
+            // await UserModel.findOneAndDelete({ token })
+            // await user.save()
+
+            // await Blacklist.create({ token, expiredAt: expireTime, device: deviceName });
+
+
+            activityTracker.create({
+                user_id: user._id,
+                actionType: `user logout from ${deviceName}`,
+                details: { email: user.email, userName: user.name }
             })
+
+            return res.json({
+                success: true,
+                message: `${user.email} logged out successfully from ${deviceName}`
+            });
         }
-
-        const tokenEntry = user.tokens.find(t => t.token === token)
-        let deviceName = tokenEntry ? tokenEntry.device : "Unkonw device"
-
-        // user.tokens = user.tokens.filter(t => t.token !== token);
-        // await user.save();
-
-        // user.tokens = user.tokens.findOneAndDelete( token )
-        // await user.save()
-
-        await UserModel.findOneAndUpdate(
-           { _id: user._id },
-           {
-               $pull: { tokens: { token: token }  }
-           }
-        )
-
-        // await user.save()
-
-        console.log(tokenEntry)
-
-        // const decoded = jwt.decode(token);
-
-        // const expireTime = new Date(decoded.exp * 1000);
-
-        // await UserModel.findOneAndDelete({ token })
-        // await user.save()
-
-        // await Blacklist.create({ token, expiredAt: expireTime, device: deviceName });
-
-
-        activityTracker.create({
-            user_id: user._id,
-            actionType: `user logout from ${deviceName}`,
-            details: { email: user.email, userName: user.name }
-        })
-
-        return res.json({
-            success: true,
-            message: `${user.email} logged out successfully from ${deviceName}`
-        });
     } catch (err) {
         return res.status(500).json({
             success: false,
@@ -366,6 +369,7 @@ const logout = async (req, res) => {
         });
     }
 }
+
 
 
 module.exports = {
