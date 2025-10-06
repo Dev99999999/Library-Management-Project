@@ -302,8 +302,10 @@ const updatePass = async (req, res) => {
 
 const logout = async (req, res) => {
     try {
-        const token = req.headers.authorization.split(" ")[1];
-        const { devices = [], all = false } = req.body
+        const authHeader = req.headers.authorization; // may be undefined
+        const token = authHeader ? authHeader.split(" ")[1] : null;
+       const { userId, devices = [], all = false } = req.body || {};
+
 
         if (!token && !devices && !all) {
             return res.status(400).json({
@@ -324,11 +326,6 @@ const logout = async (req, res) => {
             const tokenEntry = user.tokens.find(t => t.token === token)
             let deviceName = tokenEntry ? tokenEntry.device : "Unkonw device"
 
-            // user.tokens = user.tokens.filter(t => t.token !== token);
-            // await user.save();
-
-            // user.tokens = user.tokens.findOneAndDelete( token )
-            // await user.save()
 
             await UserModel.findOneAndUpdate(
                 { _id: user._id },
@@ -341,16 +338,6 @@ const logout = async (req, res) => {
 
             console.log(tokenEntry)
 
-            // const decoded = jwt.decode(token);
-
-            // const expireTime = new Date(decoded.exp * 1000);
-
-            // await UserModel.findOneAndDelete({ token })
-            // await user.save()
-
-            // await Blacklist.create({ token, expiredAt: expireTime, device: deviceName });
-
-
             activityTracker.create({
                 user_id: user._id,
                 actionType: `user logout from ${deviceName}`,
@@ -362,6 +349,58 @@ const logout = async (req, res) => {
                 message: `${user.email} logged out successfully from ${deviceName}`
             });
         }
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide userID for the multiple device and all device logout.."
+            })
+        }
+
+        const user = await UserModel.findById(userId)
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "user not fount that"
+            })
+        }
+
+        if (all === true) {
+            const total = user.tokens.length
+            user.tokens = [];
+
+            await user.save()
+
+            return res.status(200).json({
+                success: true,
+                message: `${user.email} logout from ${total} devices..`
+            })
+        }
+
+        let beforeCount = 0;
+        let removedDevices = [];
+
+        if (Array.isArray(devices) && devices.length > 0) {
+            beforeCount = user.tokens.length
+
+            user.tokens = user.tokens.filter((t) => {
+                if (devices.includes(t.device)) {
+                    removedDevices.push(t.device)
+                    return false
+                }
+                return true
+            })
+        }
+
+        await user.save()
+        const removedCount = beforeCount - user.tokens.length
+
+        return res.status(200).json({
+            success: true,
+            message: `${user.email} logged out from ${removedCount} device(s): ${removedDevices.join(
+                ", "
+            )}`
+        })
+
     } catch (err) {
         return res.status(500).json({
             success: false,
@@ -369,6 +408,109 @@ const logout = async (req, res) => {
         });
     }
 }
+
+// const logout = async (req, res) => {
+//     try {
+//         const token = req.headers.authorization?.split(" ")[1];
+//         const { userId, devices = [], all = false } = req.body;
+
+//         if (!token && !devices.length && !all) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Token or devices or 'all' field is required!"
+//             });
+//         }
+
+//         // --- Case 1: Logout from current device (token-based)
+//         if (token) {
+//             const user = await UserModel.findOne({ "tokens.token": token });
+//             if (!user) {
+//                 return res.status(400).json({
+//                     success: false,
+//                     message: "User not found!"
+//                 });
+//             }
+
+//             const tokenEntry = user.tokens.find(t => t.token === token);
+//             const deviceName = tokenEntry ? tokenEntry.device : "Unknown device";
+
+//             await UserModel.findOneAndUpdate(
+//                 { _id: user._id },
+//                 { $pull: { tokens: { token } } }
+//             );
+
+//             await activityTracker.create({
+//                 user_id: user._id,
+//                 actionType: `User logout from ${deviceName}`,
+//                 details: { email: user.email, userName: user.name }
+//             });
+
+//             return res.json({
+//                 success: true,
+//                 message: `${user.email} logged out successfully from ${deviceName}`
+//             });
+//         }
+
+//         // --- Case 2: Multiple or all device logout
+//         if (!userId) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Please provide userId for multi-device logout!"
+//             });
+//         }
+
+//         const user = await UserModel.findById(userId);
+//         if (!user) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "User not found!"
+//             });
+//         }
+
+//         // --- Case 3: Logout from all devices
+//         if (all === true) {
+//             const total = user.tokens.length;
+//             user.tokens = [];
+//             await user.save();
+
+//             return res.status(200).json({
+//                 success: true,
+//                 message: `${user.email} logged out from ${total} devices`
+//             });
+//         }
+
+//         // --- Case 4: Logout from specific devices
+//         let beforeCount = 0;
+//         let removedDevices = [];
+
+//         if (Array.isArray(devices) && devices.length > 0) {
+//             beforeCount = user.tokens.length;
+
+//             user.tokens = user.tokens.filter((t) => {
+//                 if (devices.includes(t.device)) {
+//                     removedDevices.push(t.device);
+//                     return false;
+//                 }
+//                 return true;
+//             });
+
+//             await user.save();
+
+//             const removedCount = beforeCount - user.tokens.length;
+
+//             return res.status(200).json({
+//                 success: true,
+//                 message: `${user.email} logged out from ${removedCount} device(s): ${removedDevices.join(", ")}`
+//             });
+//         }
+
+//     } catch (err) {
+//         return res.status(500).json({
+//             success: false,
+//             message: err.message
+//         });
+//     }
+// };
 
 
 

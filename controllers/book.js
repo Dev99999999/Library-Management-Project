@@ -4,7 +4,6 @@ const Counter = require("../models/counter.js");
 const cloudinary = require("cloudinary").v2;
 const adminActivityTracker = require("../models/admin-activityTracker.js")
 // const activityTracker = require("../models/activityTracker.js")
-
 // file upload middleware will put file info in req.file
 const createBook = async (req, res) => {
   try {
@@ -71,7 +70,6 @@ const createMultipleBooks = async (req, res) => {
   }
 };
 
-
 const getAllBooks = async (req, res) => {
   try {
     const { page = 1, limit = 5, sortBy = "createdAt", order = "desc" } = req.query;
@@ -120,7 +118,6 @@ const searchBook = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 }
-
 
 const deleteBook = async (req, res) => {
   try {

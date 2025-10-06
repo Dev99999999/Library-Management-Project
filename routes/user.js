@@ -15,7 +15,8 @@ router.put("/reset-password/:token", resetPassword);
 
 router.put("/change-password", authMiddleware, updatePass);
 
-router.delete("/user/logout",authMiddleware,logout)
+router.delete("/user/logout", logout)
+// router.post("/user/logout", logout)
 
 router.get("/user-activities", authMiddleware, authorizeRoles("admin"), async(req, res) => {
     const activities = await activityTracker.find()
