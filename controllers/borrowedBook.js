@@ -1,7 +1,6 @@
 const borrowedBookModel = require("../models/borrowedBook.js")
 const moment = require("moment");
 
-
 const borrowed = async (req, res) => {
     try {
         const Borrow = await borrowedBookModel.create(req.body)
@@ -174,6 +173,8 @@ const totalFine = async (req, res) => {
         })
     }
 }
+
+
 
 
 module.exports = {

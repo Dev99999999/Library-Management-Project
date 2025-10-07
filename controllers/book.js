@@ -2,7 +2,8 @@ const book = require("../models/book.js");
 const bookModel = require("../models/book.js");
 const Counter = require("../models/counter.js");
 const cloudinary = require("cloudinary").v2;
-const adminActivityTracker = require("../models/admin-activityTracker.js")
+const adminActivityTracker = require("../models/admin-activityTracker.js");
+
 // const activityTracker = require("../models/activityTracker.js")
 // file upload middleware will put file info in req.file
 const createBook = async (req, res) => {
@@ -14,7 +15,7 @@ const createBook = async (req, res) => {
       title,
       author,
       category,
-      availableCopies, 
+      availableCopies,
       fileUrl: req.file.path // Cloudinary URL
     });
 
@@ -119,6 +120,45 @@ const searchBook = async (req, res) => {
   }
 }
 
+const updateBook = async (req, res) => {
+  try {
+
+    const { title, author, category, availableCopies } = req.body;
+
+    const bookId = Number(req.params.id);
+
+    const book = await bookModel.findOne({ _id: bookId });
+    if (!book) {
+      return res.status(404).json({ success: false, message: "Book not found" });
+    }
+
+    const updateData = {};
+    if (title) updateData.title = title;
+    if (author) updateData.author = author;
+    if (category) updateData.category = category;
+    if (availableCopies !== undefined) updateData.availableCopies = availableCopies; // note !== undefined
+    if (req.file?.path) updateData.fileUrl = req.file.path;
+
+    const updatedBook = await bookModel.findOneAndUpdate(
+      { _id: bookId },
+      updateData,
+      { new: true }
+    );
+    return res.status(200).json({
+      success: true,
+      message: "book updated successfully",
+      data: updatedBook
+    })
+
+  } catch (error) {
+    console.log(error.message)
+    res.status(400).json({
+      success: false,
+      message: "something went wrong here!!..",
+    })
+  }
+}
+
 const deleteBook = async (req, res) => {
   try {
     const book = await bookModel.findById(req.params.id);
@@ -165,5 +205,6 @@ module.exports = {
   createBook,
   getAllBooks,
   searchBook,
+  updateBook,
   deleteBook
 }
