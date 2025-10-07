@@ -134,6 +134,7 @@ const getBorrowedBook = async (req, res) => {
                     fine: 1
                 }
             }
+            
         ]);
 
 
@@ -174,6 +175,17 @@ const totalFine = async (req, res) => {
     }
 }
 
+// const perPersonFine = async (req,res) => {
+//     try {
+        
+//     } catch (error) {
+//         console.log(error.message)
+//         return res.status(400).json({
+//             success: false,
+//             message: "Something went erong here!!.."
+//         })
+//     }
+// }
 
 
 

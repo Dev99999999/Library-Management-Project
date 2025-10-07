@@ -30,7 +30,7 @@ router.post("/book", authMiddleware, authorizeRoles("admin"), upload.single('boo
 
 
 router.get("/allbook", getAllBooks)
-router.get("/book/search",authMiddleware,searchBook)
+router.get("/book/search",searchBook)
 router.delete("/book/:id", authMiddleware, authorizeRoles("admin"), deleteBook);
 router.put("/book/:id", authMiddleware, authorizeRoles("admin"),updateBook)
 
