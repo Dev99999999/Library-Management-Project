@@ -8,7 +8,6 @@ const activityTracker = require("../models/activityTracker.js")
 // const UAParser = require("ua-parser-js");
 const DeviceDetector = require("device-detector-js");
 
-
 const registerUser = async (req, res) => {
     try {
         const { name, email, password, role, membershipType } = req.body;
